@@ -14,13 +14,13 @@ import (
 
 // CacheItem is an individual cache item
 // Parameter data contains the user-set value in the cache.
-type CacheItem struct {
+type CacheItem[K Key, V Value] struct {
 	sync.RWMutex
 
 	// The item's key.
-	key interface{}
+	key K
 	// The item's data.
-	data interface{}
+	data V
 	// How long will the item live in the cache when not being accessed/kept alive.
 	lifeSpan time.Duration
 
@@ -32,7 +32,7 @@ type CacheItem struct {
 	accessCount int64
 
 	// Callback method triggered right before removing the item from the cache
-	aboutToExpire []func(key interface{})
+	aboutToExpire []func(key K)
 }
 
 // NewCacheItem returns a newly created CacheItem.
@@ -40,9 +40,9 @@ type CacheItem struct {
 // Parameter lifeSpan determines after which time period without an access the item
 // will get removed from the cache.
 // Parameter data is the item's value.
-func NewCacheItem(key interface{}, lifeSpan time.Duration, data interface{}) *CacheItem {
+func NewCacheItem[K Key, V Value](key K, lifeSpan time.Duration, data V) *CacheItem[K, V] {
 	t := time.Now()
-	return &CacheItem{
+	return &CacheItem[K, V]{
 		key:           key,
 		lifeSpan:      lifeSpan,
 		createdOn:     t,
@@ -54,7 +54,7 @@ func NewCacheItem(key interface{}, lifeSpan time.Duration, data interface{}) *Ca
 }
 
 // KeepAlive marks an item to be kept for another expireDuration period.
-func (item *CacheItem) KeepAlive() {
+func (item *CacheItem[K, V]) KeepAlive() {
 	item.Lock()
 	defer item.Unlock()
 	item.accessedOn = time.Now()
@@ -62,46 +62,46 @@ func (item *CacheItem) KeepAlive() {
 }
 
 // LifeSpan returns this item's expiration duration.
-func (item *CacheItem) LifeSpan() time.Duration {
+func (item *CacheItem[K, V]) LifeSpan() time.Duration {
 	// immutable
 	return item.lifeSpan
 }
 
 // AccessedOn returns when this item was last accessed.
-func (item *CacheItem) AccessedOn() time.Time {
+func (item *CacheItem[K, V]) AccessedOn() time.Time {
 	item.RLock()
 	defer item.RUnlock()
 	return item.accessedOn
 }
 
 // CreatedOn returns when this item was added to the cache.
-func (item *CacheItem) CreatedOn() time.Time {
+func (item *CacheItem[K, V]) CreatedOn() time.Time {
 	// immutable
 	return item.createdOn
 }
 
 // AccessCount returns how often this item has been accessed.
-func (item *CacheItem) AccessCount() int64 {
+func (item *CacheItem[K, V]) AccessCount() int64 {
 	item.RLock()
 	defer item.RUnlock()
 	return item.accessCount
 }
 
 // Key returns the key of this cached item.
-func (item *CacheItem) Key() interface{} {
+func (item *CacheItem[K, V]) Key() K {
 	// immutable
 	return item.key
 }
 
 // Data returns the value of this cached item.
-func (item *CacheItem) Data() interface{} {
+func (item *CacheItem[K, V]) Data() V {
 	// immutable
 	return item.data
 }
 
 // SetAboutToExpireCallback configures a callback, which will be called right
 // before the item is about to be removed from the cache.
-func (item *CacheItem) SetAboutToExpireCallback(f func(interface{})) {
+func (item *CacheItem[K, V]) SetAboutToExpireCallback(f func(K)) {
 	if len(item.aboutToExpire) > 0 {
 		item.RemoveAboutToExpireCallback()
 	}
@@ -111,14 +111,14 @@ func (item *CacheItem) SetAboutToExpireCallback(f func(interface{})) {
 }
 
 // AddAboutToExpireCallback appends a new callback to the AboutToExpire queue
-func (item *CacheItem) AddAboutToExpireCallback(f func(interface{})) {
+func (item *CacheItem[K, V]) AddAboutToExpireCallback(f func(K)) {
 	item.Lock()
 	defer item.Unlock()
 	item.aboutToExpire = append(item.aboutToExpire, f)
 }
 
 // RemoveAboutToExpireCallback empties the about to expire callback queue
-func (item *CacheItem) RemoveAboutToExpireCallback() {
+func (item *CacheItem[K, V]) RemoveAboutToExpireCallback() {
 	item.Lock()
 	defer item.Unlock()
 	item.aboutToExpire = nil

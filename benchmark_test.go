@@ -15,7 +15,7 @@ import (
 )
 
 func BenchmarkNotFoundAdd(b *testing.B) {
-	table := Cache("testNotFoundAdd")
+	table := Cache[int, int]("testNotFoundAdd")
 
 	var finish sync.WaitGroup
 	var added int32

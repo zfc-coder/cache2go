@@ -13,13 +13,16 @@ import (
 )
 
 var (
-	cache = make(map[string]*CacheTable)
+	cache = make(map[string]any)
 	mutex sync.RWMutex
 )
 
+type Key comparable
+type Value any
+
 // Cache returns the existing cache table with given name or creates a new one
 // if the table does not exist yet.
-func Cache(table string) *CacheTable {
+func Cache[K Key, V Value](table string) *CacheTable[K, V] {
 	mutex.RLock()
 	t, ok := cache[table]
 	mutex.RUnlock()
@@ -29,14 +32,14 @@ func Cache(table string) *CacheTable {
 		t, ok = cache[table]
 		// Double check whether the table exists or not.
 		if !ok {
-			t = &CacheTable{
+			t = &CacheTable[K, V]{
 				name:  table,
-				items: make(map[interface{}]*CacheItem),
+				items: make(map[K]*CacheItem[K, V]),
 			}
 			cache[table] = t
 		}
 		mutex.Unlock()
 	}
 
-	return t
+	return t.(*CacheTable[K, V])
 }

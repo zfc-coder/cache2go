@@ -8,19 +8,19 @@ import (
 )
 
 func main() {
-	cache := cache2go.Cache("myCache")
+	cache := cache2go.Cache[string, string]("myCache")
 
 	// This callback will be triggered every time a new item
 	// gets added to the cache.
-	cache.SetAddedItemCallback(func(entry *cache2go.CacheItem) {
+	cache.SetAddedItemCallback(func(entry *cache2go.CacheItem[string, string]) {
 		fmt.Println("Added Callback 1:", entry.Key(), entry.Data(), entry.CreatedOn())
 	})
-	cache.AddAddedItemCallback(func(entry *cache2go.CacheItem) {
+	cache.AddAddedItemCallback(func(entry *cache2go.CacheItem[string, string]) {
 		fmt.Println("Added Callback 2:", entry.Key(), entry.Data(), entry.CreatedOn())
 	})
 	// This callback will be triggered every time an item
 	// is about to be removed from the cache.
-	cache.SetAboutToDeleteItemCallback(func(entry *cache2go.CacheItem) {
+	cache.SetAboutToDeleteItemCallback(func(entry *cache2go.CacheItem[string, string]) {
 		fmt.Println("Deleting:", entry.Key(), entry.Data(), entry.CreatedOn())
 	})
 
@@ -43,8 +43,8 @@ func main() {
 	res = cache.Add("anotherKey", 3*time.Second, "This is another test")
 
 	// This callback will be triggered when the item is about to expire
-	res.SetAboutToExpireCallback(func(key interface{}) {
-		fmt.Println("About to expire:", key.(string))
+	res.SetAboutToExpireCallback(func(key string) {
+		fmt.Println("About to expire:", key)
 	})
 
 	time.Sleep(5 * time.Second)
