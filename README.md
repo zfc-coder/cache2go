@@ -28,7 +28,7 @@ To compile it from source:
 package main
 
 import (
-	"github.com/muesli/cache2go"
+	"github.com/zfc-coder/cache2go"
 	"fmt"
 	"time"
 )
