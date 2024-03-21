@@ -15,11 +15,11 @@ See the [install instructions](https://golang.org/doc/install.html).
 
 To install cache2go, simply run:
 
-    go get github.com/muesli/cache2go
+    go get github.com/zfc-coder/cache2go
 
 To compile it from source:
 
-    cd $GOPATH/src/github.com/muesli/cache2go
+    cd $GOPATH/src/github.com/zfc-coder/cache2go
     go get -u -v
     go build && go test -v
 
